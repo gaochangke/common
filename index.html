@@ -126,25 +126,33 @@
 
 <script>
   // ========== 背景轮播 ==========
-  const photos = ['202512301.jpg', '202512302.jpg', '202512303.jpg', '202512304.jpg', '202512305.jpg', '202512306.jpg, '202512307.jpg']; // ← 在这里添加你的照片文件名
+  const photos = [
+  '202512301.jpg',
+  '202512302.jpg',
+  '202512303.jpg',
+  '202512304.jpg',
+  '202512305.jpg',
+  '202512306.jpg',
+  '202512307.jpg'
+];// ← 在这里添加你的照片文件名
   const bgContainer = document.getElementById('bgContainer');
   let current = 0;
 
   photos.forEach((src, i) => {
-    const slide = document.createElement('div');
-    slide.className = 'bg-slide';
-    slide.style.backgroundImage = `url(${src})`;
-    if (i === 0) slide.classList.add('active');
-    bgContainer.appendChild(slide);
-  });
+  const slide = document.createElement('div');
+  slide.className = 'bg-slide';
+  slide.style.backgroundImage = `url(${src})`;
+  if (i === 0) slide.classList.add('active');
+  bgContainer.appendChild(slide);
+});
 
-  function rotateBg() {
-    const slides = document.querySelectorAll('.bg-slide');
-    slides[current].classList.remove('active');
-    current = (current + 1) % photos.length;
-    slides[current].classList.add('active');
-  }
-  setInterval(rotateBg, 6000); // 每6秒切换
+function rotateBg() {
+  const slides = document.querySelectorAll('.bg-slide');
+  slides[current].classList.remove('active');
+  current = (current + 1) % photos.length;
+  slides[current].classList.add('active');
+}
+setInterval(rotateBg, 6000); // 每6秒切换
 
   // ========== 其他逻辑（烟花、泡泡等）==========
   const startPrompt = document.getElementById('startPrompt');
@@ -273,3 +281,4 @@
 
 </body>
 </html>
+
