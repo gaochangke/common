@@ -157,6 +157,35 @@ setInterval(rotateBg, 2000); // 每6秒切换
   // ========== 其他逻辑（烟花、泡泡等）==========
   const startPrompt = document.getElementById('startPrompt');
   const bgMusic = document.getElementById('bgMusic');
+  function startExperience() {
+   // 立即取消静音并播放（必须在 click 的直接回调中！）
+   bgMusic.muted = false;
+   bgMusic.volume = 0.5;
+  
+   // 尝试播放
+   const playPromise = bgMusic.play();
+   if (playPromise !== undefined) {
+     playPromise
+       .then(() => {
+         console.log("🎵 音乐已播放");
+       })
+       .catch(error => {
+         console.warn("❌ 播放被阻止，请再点一次", error);
+         // fallback: 再次绑定点击播放
+         document.body.addEventListener('click', () => {
+           bgMusic.play();
+         }, { once: true });
+       });
+   }
+
+   // 其他效果
+   startPrompt.style.opacity = '0';
+   setTimeout(() => startPrompt.remove(), 500);
+   startTime = Date.now();
+   animateFireworks();
+  }
+
+  startPrompt.addEventListener('click', startExperience);
   const canvas = document.getElementById('fireworksCanvas');
   const ctx = canvas.getContext('2d');
   let w, h;
@@ -281,6 +310,7 @@ setInterval(rotateBg, 2000); // 每6秒切换
 
 </body>
 </html>
+
 
 
 
