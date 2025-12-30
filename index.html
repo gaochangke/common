@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>高长科 × 李娟 · 新年快乐</title>
+  <title>高长科 ❤️ 李娟 · 新年快乐</title>
   <style>
     * {
       margin: 0;
@@ -14,11 +14,32 @@
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background: url('https://gaochangke.oss-cn-hangzhou.aliyuncs.com/202512301.jpg') center/cover no-repeat;
-      background-blend-mode: overlay;
-      background-color: rgba(255, 175, 189, 0.7);
       font-family: "Microsoft YaHei", sans-serif;
       position: relative;
+    }
+
+    /* 背景轮播容器 */
+    #bgContainer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+    .bg-slide {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-size: cover;
+      background-position: center;
+      opacity: 0;
+      transition: opacity 1.2s ease-in-out;
+    }
+    .bg-slide.active {
+      opacity: 1;
     }
 
     /* 点击提示 */
@@ -81,22 +102,22 @@
     }
 
     @media (min-width: 768px) {
-      #message {
-        font-size: 32px;
-      }
-      #startPrompt {
-        font-size: 28px;
-      }
+      #message { font-size: 32px; }
+      #startPrompt { font-size: 28px; }
     }
   </style>
 </head>
 <body>
 
+<div id="bgContainer"></div>
 <div id="startPrompt">轻触屏幕，开启我们的新年❤️</div>
 <canvas id="fireworksCanvas"></canvas>
+
+<!-- 内嵌音频 -->
 <audio id="bgMusic" loop>
-  <source src="https://cdn.pixabay.com/download/audio/2021/12/13/audio_5b5f6e5e9d.mp3?filename=christmas-piano-music-123193.mp3" type="audio/mpeg">
+  <source src="romantic_newyear.mp3" type="audio/mpeg">
 </audio>
+
 <div id="message">
   <div style="font-size: 20px; margin-bottom: 10px;">高长科 ❤️ 李娟</div>
   <div>亲爱的老婆，新年快乐！</div>
@@ -104,6 +125,28 @@
 </div>
 
 <script>
+  // ========== 背景轮播 ==========
+  const photos = ['202512301.jpg', '202512302.jpg', '202512303.jpg', '202512304.jpg', '202512305.jpg', '202512306.jpg, '202512307.jpg']; // ← 在这里添加你的照片文件名
+  const bgContainer = document.getElementById('bgContainer');
+  let current = 0;
+
+  photos.forEach((src, i) => {
+    const slide = document.createElement('div');
+    slide.className = 'bg-slide';
+    slide.style.backgroundImage = `url(${src})`;
+    if (i === 0) slide.classList.add('active');
+    bgContainer.appendChild(slide);
+  });
+
+  function rotateBg() {
+    const slides = document.querySelectorAll('.bg-slide');
+    slides[current].classList.remove('active');
+    current = (current + 1) % photos.length;
+    slides[current].classList.add('active');
+  }
+  setInterval(rotateBg, 6000); // 每6秒切换
+
+  // ========== 其他逻辑（烟花、泡泡等）==========
   const startPrompt = document.getElementById('startPrompt');
   const bgMusic = document.getElementById('bgMusic');
   const canvas = document.getElementById('fireworksCanvas');
@@ -117,25 +160,24 @@
   resizeCanvas();
   window.addEventListener('resize', resizeCanvas);
 
-  // 粉红系烟花颜色
-  const colors = ['#ff6b9d', '#ff85a2', '#ff9ec0', '#ffb7d5', '#ffcfe0', '#ff9aa2', '#ff758f'];
-
+  // 更大的烟花粒子
+  const colors = ['#ff6b9d', '#ff85a2', '#ff9ec0', '#ffb7d5', '#ffcfe0'];
   class Particle {
     constructor(x, y, color) {
       this.x = x;
       this.y = y;
       this.color = color;
-      this.radius = Math.random() * 2.5 + 1;
-      this.vx = (Math.random() - 0.5) * 7;
-      this.vy = (Math.random() - 0.5) * 7;
+      this.radius = Math.random() * 4 + 2; // ← 更大！
+      this.vx = (Math.random() - 0.5) * 9; // ← 更快！
+      this.vy = (Math.random() - 0.5) * 9;
       this.alpha = 1;
-      this.decay = Math.random() * 0.03 + 0.015;
+      this.decay = Math.random() * 0.025 + 0.01;
     }
     update() {
       this.x += this.vx;
       this.y += this.vy;
       this.alpha -= this.decay;
-      this.vy += 0.08;
+      this.vy += 0.1; // 重力稍强
     }
     draw() {
       ctx.save();
@@ -149,19 +191,18 @@
   }
 
   const particles = [];
-
   function launchFirework() {
-    if (particles.length > 400) return;
+    if (particles.length > 600) return; // 允许更多粒子
     const x = Math.random() * w;
     const y = h;
     const color = colors[Math.floor(Math.random() * colors.length)];
-    for (let i = 0; i < 120; i++) {
+    for (let i = 0; i < 180; i++) { // ← 更多粒子！
       particles.push(new Particle(x, y, color));
     }
   }
 
   function animateFireworks() {
-    ctx.fillStyle = 'rgba(255,175,189,0.08)';
+    ctx.fillStyle = 'rgba(255,175,189,0.1)';
     ctx.fillRect(0, 0, w, h);
     for (let i = particles.length - 1; i >= 0; i--) {
       particles[i].update();
@@ -170,8 +211,8 @@
         particles.splice(i, 1);
       }
     }
-    if (Date.now() - startTime < 4000) {
-      if (Math.random() < 0.06) launchFirework();
+    if (Date.now() - startTime < 5000) { // 延长烟花时间
+      if (Math.random() < 0.08) launchFirework();
       requestAnimationFrame(animateFireworks);
     } else {
       startBubbles();
@@ -179,18 +220,14 @@
   }
 
   let startTime;
-
   function startExperience() {
     startPrompt.style.opacity = '0';
     setTimeout(() => startPrompt.remove(), 500);
-
     bgMusic.volume = 0.5;
     bgMusic.play().catch(e => console.log("Audio play failed:", e));
-
     startTime = Date.now();
     animateFireworks();
   }
-
   startPrompt.addEventListener('click', startExperience);
 
   // ========== 爱心泡泡 ==========
@@ -198,19 +235,16 @@
     const bubble = document.createElement('div');
     bubble.className = 'bubble';
     document.body.appendChild(bubble);
-
-    const size = Math.random() * 40 + 25;
+    const size = Math.random() * 50 + 30;
     const left = Math.random() * (window.innerWidth - size);
-    const duration = Math.random() * 6 + 5;
-    const delay = Math.random() * 1.5;
-
+    const duration = Math.random() * 7 + 6;
+    const delay = Math.random() * 2;
     bubble.style.width = size + 'px';
     bubble.style.height = size + 'px';
     bubble.style.left = left + 'px';
     bubble.style.animation = `floatUp ${duration}s ease-in forwards`;
     bubble.style.animationDelay = delay + 's';
     bubble.style.opacity = '1';
-
     setTimeout(() => bubble.remove(), (duration + delay) * 1000);
   }
 
@@ -221,26 +255,21 @@
         0% { transform: translateY(0) scale(0.7); opacity: 0; }
         15% { opacity: 1; }
         85% { opacity: 0.9; }
-        100% { transform: translateY(-${window.innerHeight + 150}px) scale(1.3); opacity: 0; }
+        100% { transform: translateY(-${window.innerHeight + 200}px) scale(1.4); opacity: 0; }
       }
     `;
     document.head.appendChild(style);
-
-    const interval = setInterval(createBubble, 220);
+    const interval = setInterval(createBubble, 200);
     setTimeout(() => {
       clearInterval(interval);
       showMessage();
-    }, 6000);
+    }, 7000);
   }
 
-  // ========== 显示文字 ==========
   function showMessage() {
-    const msg = document.getElementById('message');
-    msg.style.transition = 'opacity 1.8s ease-out';
-    msg.style.opacity = '1';
+    document.getElementById('message').style.opacity = '1';
   }
 </script>
 
 </body>
-
 </html>
