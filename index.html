@@ -114,7 +114,7 @@
 <canvas id="fireworksCanvas"></canvas>
 
 <!-- 内嵌音频 -->
-<audio id="bgMusic" loop muted>
+<audio id="bgMusic" loop muted preload="auto">
   <source src="romantic_newyear.mp3" type="audio/mpeg">
 </audio>
 
@@ -127,65 +127,43 @@
 <script>
   // ========== 背景轮播 ==========
   const photos = [
-  '202512301.jpg',
-  '202512302.jpg',
-  '202512303.jpg',
-  '202512304.jpg',
-  '202512305.jpg',
-  '202512306.jpg',
-  '202512307.jpg'
-];// ← 在这里添加你的照片文件名
+    '202512301.jpg',
+    '202512302.jpg',
+    '202512303.jpg',
+    '202512304.jpg',
+    '202512305.jpg',
+    '202512306.jpg',
+    '202512307.jpg'
+  ];
+
   const bgContainer = document.getElementById('bgContainer');
   let current = 0;
 
   photos.forEach((src, i) => {
-  const slide = document.createElement('div');
-  slide.className = 'bg-slide';
-  slide.style.backgroundImage = `url(${src})`;
-  if (i === 0) slide.classList.add('active');
-  bgContainer.appendChild(slide);
-});
+    const slide = document.createElement('div');
+    slide.className = 'bg-slide';
+    slide.style.backgroundImage = `url(${src})`;
+    if (i === 0) slide.classList.add('active');
+    bgContainer.appendChild(slide);
+  });
 
-function rotateBg() {
-  const slides = document.querySelectorAll('.bg-slide');
-  slides[current].classList.remove('active');
-  current = (current + 1) % photos.length;
-  slides[current].classList.add('active');
-}
-setInterval(rotateBg, 2000); // 每6秒切换
-
-  // ========== 其他逻辑（烟花、泡泡等）==========
-  const startPrompt = document.getElementById('startPrompt');
-  const bgMusic = document.getElementById('bgMusic');
-  function startExperience() {
-   // 立即取消静音并播放（必须在 click 的直接回调中！）
-   bgMusic.muted = false;
-   bgMusic.volume = 0.5;
-  
-   // 尝试播放
-   const playPromise = bgMusic.play();
-   if (playPromise !== undefined) {
-     playPromise
-       .then(() => {
-         console.log("🎵 音乐已播放");
-       })
-       .catch(error => {
-         console.warn("❌ 播放被阻止，请再点一次", error);
-         // fallback: 再次绑定点击播放
-         document.body.addEventListener('click', () => {
-           bgMusic.play();
-         }, { once: true });
-       });
-   }
-
-   // 其他效果
-   startPrompt.style.opacity = '0';
-   setTimeout(() => startPrompt.remove(), 500);
-   startTime = Date.now();
-   animateFireworks();
+  function rotateBg() {
+    const slides = document.querySelectorAll('.bg-slide');
+    slides[current].classList.remove('active');
+    current = (current + 1) % photos.length;
+    slides[current].classList.add('active');
   }
+  setInterval(rotateBg, 3000); // 每3秒切换
 
-  startPrompt.addEventListener('click', startExperience);
+  // ========== 音频预加载状态 ==========
+  let audioReady = false;
+  const bgMusic = document.getElementById('bgMusic');
+  bgMusic.addEventListener('canplaythrough', () => {
+    audioReady = true;
+    console.log("✅ 音频已就绪");
+  });
+
+  // ========== Canvas 初始化 ==========
   const canvas = document.getElementById('fireworksCanvas');
   const ctx = canvas.getContext('2d');
   let w, h;
@@ -197,15 +175,15 @@ setInterval(rotateBg, 2000); // 每6秒切换
   resizeCanvas();
   window.addEventListener('resize', resizeCanvas);
 
-  // 更大的烟花粒子
+  // ========== 烟花粒子 ==========
   const colors = ['#ff6b9d', '#ff85a2', '#ff9ec0', '#ffb7d5', '#ffcfe0'];
   class Particle {
     constructor(x, y, color) {
       this.x = x;
       this.y = y;
       this.color = color;
-      this.radius = Math.random() * 4 + 2; // ← 更大！
-      this.vx = (Math.random() - 0.5) * 9; // ← 更快！
+      this.radius = Math.random() * 4 + 2;
+      this.vx = (Math.random() - 0.5) * 9;
       this.vy = (Math.random() - 0.5) * 9;
       this.alpha = 1;
       this.decay = Math.random() * 0.025 + 0.01;
@@ -214,7 +192,7 @@ setInterval(rotateBg, 2000); // 每6秒切换
       this.x += this.vx;
       this.y += this.vy;
       this.alpha -= this.decay;
-      this.vy += 0.1; // 重力稍强
+      this.vy += 0.1;
     }
     draw() {
       ctx.save();
@@ -229,11 +207,11 @@ setInterval(rotateBg, 2000); // 每6秒切换
 
   const particles = [];
   function launchFirework() {
-    if (particles.length > 600) return; // 允许更多粒子
+    if (particles.length > 600) return;
     const x = Math.random() * w;
     const y = h;
     const color = colors[Math.floor(Math.random() * colors.length)];
-    for (let i = 0; i < 180; i++) { // ← 更多粒子！
+    for (let i = 0; i < 180; i++) {
       particles.push(new Particle(x, y, color));
     }
   }
@@ -248,7 +226,7 @@ setInterval(rotateBg, 2000); // 每6秒切换
         particles.splice(i, 1);
       }
     }
-    if (Date.now() - startTime < 5000) { // 延长烟花时间
+    if (Date.now() - startTime < 5000) {
       if (Math.random() < 0.08) launchFirework();
       requestAnimationFrame(animateFireworks);
     } else {
@@ -256,15 +234,34 @@ setInterval(rotateBg, 2000); // 每6秒切换
     }
   }
 
+  // ========== 核心交互逻辑 ==========
+  const startPrompt = document.getElementById('startPrompt');
   let startTime;
+
   function startExperience() {
+    // 动态获取音频（确保在用户手势上下文中）
+    const music = document.getElementById('bgMusic');
+    music.muted = false;
+    music.volume = 0.5;
+
+    const playPromise = music.play();
+    if (playPromise !== undefined) {
+      playPromise.catch(e => {
+        console.warn("⚠️ 音频播放被阻止，请再轻触一次屏幕", e);
+        // Fallback: 下次点击任意位置播放
+        document.body.addEventListener('click', () => {
+          document.getElementById('bgMusic').play();
+        }, { once: true });
+      });
+    }
+
+    // 启动视觉效果
     startPrompt.style.opacity = '0';
     setTimeout(() => startPrompt.remove(), 500);
-    bgMusic.volume = 0.5;
-    bgMusic.play().catch(e => console.log("Audio play failed:", e));
     startTime = Date.now();
     animateFireworks();
   }
+
   startPrompt.addEventListener('click', startExperience);
 
   // ========== 爱心泡泡 ==========
@@ -306,11 +303,15 @@ setInterval(rotateBg, 2000); // 每6秒切换
   function showMessage() {
     document.getElementById('message').style.opacity = '1';
   }
+
+  // ========== 音频上下文激活（防 iOS 首次失效）==========
+  document.addEventListener('touchstart', function unlockAudio() {
+    const silent = new Audio();
+    silent.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAA";
+    silent.play().catch(() => {});
+    document.removeEventListener('touchstart', unlockAudio);
+  }, { once: true });
 </script>
 
 </body>
 </html>
-
-
-
-
