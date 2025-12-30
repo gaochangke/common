@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>高长科 × 李娟 · 新年快乐</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body, html {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: url('https://gaochangke.oss-cn-hangzhou.aliyuncs.com/202512301.jpg') center/cover no-repeat;
+      background-blend-mode: overlay;
+      background-color: rgba(255, 175, 189, 0.7);
+      font-family: "Microsoft YaHei", sans-serif;
+      position: relative;
+    }
+
+    /* 点击提示 */
+    #startPrompt {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: rgba(0,0,0,0.4);
+      color: white;
+      font-size: 24px;
+      text-align: center;
+      z-index: 100;
+      cursor: pointer;
+      transition: opacity 0.5s;
+    }
+
+    /* 烟花画布 */
+    #fireworksCanvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 10;
+    }
+
+    /* 爱心泡泡 */
+    .bubble {
+      position: absolute;
+      bottom: -60px;
+      width: 50px;
+      height: 50px;
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23ff6b9d"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>') no-repeat center;
+      background-size: contain;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 20;
+    }
+
+    /* 祝福文字 */
+    #message {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #d81b60;
+      font-size: 28px;
+      text-align: center;
+      opacity: 0;
+      z-index: 30;
+      max-width: 90%;
+      line-height: 1.6;
+      text-shadow: 0 0 12px rgba(255,255,255,0.8);
+      font-weight: bold;
+    }
+
+    @media (min-width: 768px) {
+      #message {
+        font-size: 32px;
+      }
+      #startPrompt {
+        font-size: 28px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div id="startPrompt">轻触屏幕，开启我们的新年❤️</div>
+<canvas id="fireworksCanvas"></canvas>
+<audio id="bgMusic" loop>
+  <source src="https://cdn.pixabay.com/download/audio/2021/12/13/audio_5b5f6e5e9d.mp3?filename=christmas-piano-music-123193.mp3" type="audio/mpeg">
+</audio>
+<div id="message">
+  <div style="font-size: 20px; margin-bottom: 10px;">高长科 × 李娟</div>
+  <div>亲爱的老婆，新年快乐！</div>
+  <div>希望2026年，快乐常在，美艳无双！</div>
+</div>
+
+<script>
+  const startPrompt = document.getElementById('startPrompt');
+  const bgMusic = document.getElementById('bgMusic');
+  const canvas = document.getElementById('fireworksCanvas');
+  const ctx = canvas.getContext('2d');
+  let w, h;
+
+  function resizeCanvas() {
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+  }
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+
+  // 粉红系烟花颜色
+  const colors = ['#ff6b9d', '#ff85a2', '#ff9ec0', '#ffb7d5', '#ffcfe0', '#ff9aa2', '#ff758f'];
+
+  class Particle {
+    constructor(x, y, color) {
+      this.x = x;
+      this.y = y;
+      this.color = color;
+      this.radius = Math.random() * 2.5 + 1;
+      this.vx = (Math.random() - 0.5) * 7;
+      this.vy = (Math.random() - 0.5) * 7;
+      this.alpha = 1;
+      this.decay = Math.random() * 0.03 + 0.015;
+    }
+    update() {
+      this.x += this.vx;
+      this.y += this.vy;
+      this.alpha -= this.decay;
+      this.vy += 0.08;
+    }
+    draw() {
+      ctx.save();
+      ctx.globalAlpha = this.alpha;
+      ctx.fillStyle = this.color;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  const particles = [];
+
+  function launchFirework() {
+    if (particles.length > 400) return;
+    const x = Math.random() * w;
+    const y = h;
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    for (let i = 0; i < 120; i++) {
+      particles.push(new Particle(x, y, color));
+    }
+  }
+
+  function animateFireworks() {
+    ctx.fillStyle = 'rgba(255,175,189,0.08)';
+    ctx.fillRect(0, 0, w, h);
+    for (let i = particles.length - 1; i >= 0; i--) {
+      particles[i].update();
+      particles[i].draw();
+      if (particles[i].alpha <= 0) {
+        particles.splice(i, 1);
+      }
+    }
+    if (Date.now() - startTime < 4000) {
+      if (Math.random() < 0.06) launchFirework();
+      requestAnimationFrame(animateFireworks);
+    } else {
+      startBubbles();
+    }
+  }
+
+  let startTime;
+
+  function startExperience() {
+    startPrompt.style.opacity = '0';
+    setTimeout(() => startPrompt.remove(), 500);
+
+    bgMusic.volume = 0.5;
+    bgMusic.play().catch(e => console.log("Audio play failed:", e));
+
+    startTime = Date.now();
+    animateFireworks();
+  }
+
+  startPrompt.addEventListener('click', startExperience);
+
+  // ========== 爱心泡泡 ==========
+  function createBubble() {
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble';
+    document.body.appendChild(bubble);
+
+    const size = Math.random() * 40 + 25;
+    const left = Math.random() * (window.innerWidth - size);
+    const duration = Math.random() * 6 + 5;
+    const delay = Math.random() * 1.5;
+
+    bubble.style.width = size + 'px';
+    bubble.style.height = size + 'px';
+    bubble.style.left = left + 'px';
+    bubble.style.animation = `floatUp ${duration}s ease-in forwards`;
+    bubble.style.animationDelay = delay + 's';
+    bubble.style.opacity = '1';
+
+    setTimeout(() => bubble.remove(), (duration + delay) * 1000);
+  }
+
+  function startBubbles() {
+    const style = document.createElement('style');
+    style.innerHTML = `
+      @keyframes floatUp {
+        0% { transform: translateY(0) scale(0.7); opacity: 0; }
+        15% { opacity: 1; }
+        85% { opacity: 0.9; }
+        100% { transform: translateY(-${window.innerHeight + 150}px) scale(1.3); opacity: 0; }
+      }
+    `;
+    document.head.appendChild(style);
+
+    const interval = setInterval(createBubble, 220);
+    setTimeout(() => {
+      clearInterval(interval);
+      showMessage();
+    }, 6000);
+  }
+
+  // ========== 显示文字 ==========
+  function showMessage() {
+    const msg = document.getElementById('message');
+    msg.style.transition = 'opacity 1.8s ease-out';
+    msg.style.opacity = '1';
+  }
+</script>
+
+</body>
+</html>
