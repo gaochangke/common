@@ -69,6 +69,8 @@
       width: 100%;
       height: 100%;
       z-index: 2; /* 关键：低于文字泡泡，但高于背景，且不遮挡背景 */
+      background: transparent; /* 👈 新增 */
+      pointer-events: none; 
     }
 
     /* 爱心泡泡 */
@@ -217,9 +219,7 @@
   }
 
   function animateFireworks() {
-    // 使用更透明的黑色清除，避免遮挡背景图
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.03)';
-    ctx.fillRect(0, 0, w, h);
+    ctx.clearRect(0, 0, w, h);
     
     for (let i = particles.length - 1; i >= 0; i--) {
       particles[i].update();
@@ -314,4 +314,5 @@
 
 </body>
 </html>
+
 
