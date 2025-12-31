@@ -68,7 +68,7 @@
       left: 0;
       width: 100%;
       height: 100%;
-      z-index: 10;
+      z-index: 2; /* 关键：低于文字泡泡，但高于背景，且不遮挡背景 */
     }
 
     /* 爱心泡泡 */
@@ -115,7 +115,7 @@
 
 <!-- 内嵌音频 -->
 <audio id="bgMusic" loop muted preload="auto">
-  <source src="https://gaochangke.oss-cn-hangzhou.aliyuncs.com/romantic_newyear.mp3" type="audio/mpeg">
+  <source src="assets/romantic_newyear.mp3" type="audio/mpeg">
 </audio>
 
 <div id="message">
@@ -127,13 +127,13 @@
 <script>
   // ========== 背景轮播 ==========
   const photos = [
-    'https://gaochangke.oss-cn-hangzhou.aliyuncs.com/202512301.jpg',
-    'https://gaochangke.oss-cn-hangzhou.aliyuncs.com/202512302.jpg',
-    'https://gaochangke.oss-cn-hangzhou.aliyuncs.com/202512303.jpg',
-    'https://gaochangke.oss-cn-hangzhou.aliyuncs.com/202512304.jpg',
-    'https://gaochangke.oss-cn-hangzhou.aliyuncs.com/202512305.jpg',
-    'https://gaochangke.oss-cn-hangzhou.aliyuncs.com/202512306.jpg',
-    'https://gaochangke.oss-cn-hangzhou.aliyuncs.com/202512307.jpg'
+    'assets/202512301.jpg',
+    'assets/202512302.jpg',
+    'assets/202512303.jpg',
+    'assets/202512304.jpg',
+    'assets/202512305.jpg',
+    'assets/202512306.jpg',
+    'assets/202512307.jpg'
   ];
 
   const bgContainer = document.getElementById('bgContainer');
@@ -153,7 +153,7 @@
     current = (current + 1) % photos.length;
     slides[current].classList.add('active');
   }
-  setInterval(rotateBg, 3000); // 每6秒切换
+  setInterval(rotateBg, 3000); // 每3秒切换（原注释写6秒，实际是3秒）
 
   // ========== 音频预加载状态 ==========
   let audioReady = false;
@@ -217,8 +217,10 @@
   }
 
   function animateFireworks() {
-    ctx.fillStyle = 'rgba(255,175,189,0.1)';
+    // 使用更透明的黑色清除，避免遮挡背景图
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.08)';
     ctx.fillRect(0, 0, w, h);
+    
     for (let i = particles.length - 1; i >= 0; i--) {
       particles[i].update();
       particles[i].draw();
@@ -239,7 +241,6 @@
   let startTime;
 
   function startExperience() {
-    // 动态获取音频（确保在用户手势上下文中）
     const music = document.getElementById('bgMusic');
     music.muted = false;
     music.volume = 0.5;
@@ -248,14 +249,12 @@
     if (playPromise !== undefined) {
       playPromise.catch(e => {
         console.warn("⚠️ 音频播放被阻止，请再轻触一次屏幕", e);
-        // Fallback: 下次点击任意位置播放
         document.body.addEventListener('click', () => {
           document.getElementById('bgMusic').play();
         }, { once: true });
       });
     }
 
-    // 启动视觉效果
     startPrompt.style.opacity = '0';
     setTimeout(() => startPrompt.remove(), 500);
     startTime = Date.now();
